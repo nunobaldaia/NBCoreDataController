@@ -54,6 +54,7 @@
 - (void)nb_delete;
 - (void)nb_deleteInContext:(NSManagedObjectContext *)context;
 
+- (id)nb_inMainContext;
 - (id)nb_inContext:(NSManagedObjectContext *)context;
 
 @end

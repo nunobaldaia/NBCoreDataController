@@ -173,6 +173,11 @@
     [context deleteObject:[self nb_inContext:context]];
 }
 
+- (id)nb_inMainContext
+{
+    return [self nb_inContext:[NBCoreDataController sharedInstance].mainContext];
+}
+
 - (id)nb_inContext:(NSManagedObjectContext *)context
 {
     return [context objectWithID:self.objectID];
