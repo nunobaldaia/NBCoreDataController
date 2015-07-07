@@ -24,33 +24,39 @@
 #import <CoreData/CoreData.h>
 
 /**
- Simple and lightweight implementatoin of the elegant 3-context scheme proposed by Marcus Zarra for asynchronous CoreData saving.
+ Simple and lightweight implementatoin of the elegant 3-context scheme proposed by Marcus Zarra for asynchronous CoreData saving
  
  @discussion Reference: http://www.cocoanetics.com/2012/07/multi-context-coredata/
 */
 @interface NBCoreDataController : NSObject
 
 /**
- Persistent store coordinator.
- 
- @discussion Persistent store coordinator for the default model and SQLite storage created by the Xcode CoreData template.
+ Persistent store coordinator for the current Core Data stack
  */
 @property (strong, nonatomic, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 /**
- Main managed object context. 
- 
- @discussion Main thread managed object context.
+ Background saving context.
+ */
+@property (strong, nonatomic, readonly) NSManagedObjectContext *rootContext;
+
+/**
+ Main thread managed object context.
  */
 @property (strong, nonatomic, readonly) NSManagedObjectContext *mainContext;
 
 /**
- Shared instance of the stack
+ Controller's shared instance
  */
 + (NBCoreDataController *)sharedInstance;
 
 /**
- Save the `mainContext` up to the store, providing a block to perform heavy operations on a background thread
+ Builds a new Core Data stack for the given persistent store coordinator
+ */
+- (void)buildStackWithPersistentStoreCoordinator:(NSPersistentStoreCoordinator *)persistentStoreCoordinator;
+
+/**
+ Save the @c mainContext up to the store, providing a block to perform heavy operations on a background thread
  
  @param block The block that will be performed on a background thread with a temporary private queue concurrency type managed object context
  @param completion The completion block with the saving success result and error
@@ -58,15 +64,17 @@
 - (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block completion:(void (^)(BOOL success, NSError *error))completion;
 
 /**
- Save the `mainContext` up to the store
+ Save the @c mainContext up to the store
  
  @param completion The completion block with the saving success result and error
  */
 - (void)saveWithCompletion:(void (^)(BOOL success, NSError *error))completion;
 
 /**
- Return a new managed object context based on a in memory persistent store coordinator for unit tests
+ Return the managed object ID from the persistent store.
+ 
+ @param Object ID URI representation
  */
-- (NSManagedObjectContext *)inMemoryContext;
+- (NSManagedObjectID *)managedObjectIDForURIRepresentation:(NSURL *)url;
 
 @end

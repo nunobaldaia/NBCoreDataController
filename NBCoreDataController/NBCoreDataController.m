@@ -25,28 +25,39 @@
 
 @interface NBCoreDataController ()
 
-@property (strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (strong, nonatomic) NSManagedObjectContext *rootContext;
 @property (strong, nonatomic) NSManagedObjectContext *mainContext;
-
 @property (strong, nonatomic) NSManagedObjectContext *inMemoryContext;
-
-@property (strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 
 @end
 
 
-@implementation NBCoreDataController
+@implementation NBCoreDataController {
+    NSPersistentStoreCoordinator *_persistentStoreCoordinator;
+}
 
 + (NBCoreDataController *)sharedInstance
 {
-    static NBCoreDataController *sharedInstance = nil;
-    static dispatch_once_t onceToken; // onceToken = 0
+    static NBCoreDataController *_sharedInstance;
+    static dispatch_once_t onceToken;
+    
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[NBCoreDataController alloc] init];
+        _sharedInstance = [[NBCoreDataController alloc] init];
     });
     
-    return sharedInstance;
+    return _sharedInstance;
+}
+
+- (void)buildStackWithPersistentStoreCoordinator:(NSPersistentStoreCoordinator *)persistentStoreCoordinator
+{
+    _persistentStoreCoordinator = persistentStoreCoordinator;
+    _rootContext = nil;
+    _mainContext = nil;
+}
+
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
+{
+    return _persistentStoreCoordinator;
 }
 
 - (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block completion:(void (^)(BOOL success, NSError *error))completion
@@ -125,36 +136,12 @@
     }];
 }
 
+- (NSManagedObjectID *)managedObjectIDForURIRepresentation:(NSURL *)url;
+{
+    return [self.persistentStoreCoordinator managedObjectIDForURIRepresentation:url];
+}
+
 #pragma mark - Core Data stack
-
-- (NSManagedObjectModel *)managedObjectModel
-{
-    if (_managedObjectModel == nil) {
-        NSURL *modelURL = [[NSBundle mainBundle] URLForResource:[self bundleName] withExtension:@"momd"];
-        _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-    }
-    return _managedObjectModel;
-}
-
-- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
-{
-    if (_persistentStoreCoordinator == nil) {
-        NSString *storePath = [[self bundleName] stringByAppendingString:@".sqlite"];
-        NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:storePath];
-        
-        NSDictionary *options = @{NSMigratePersistentStoresAutomaticallyOption:@YES,
-                                  NSInferMappingModelAutomaticallyOption:@YES};
-        
-        _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
-        
-        [_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType
-                                                  configuration:nil
-                                                            URL:storeURL
-                                                        options:options
-                                                          error:NULL];
-    }
-    return _persistentStoreCoordinator;
-}
 
 - (NSManagedObjectContext *)rootContext
 {
@@ -172,32 +159,6 @@
         _mainContext.parentContext = self.rootContext;
     }
     return _mainContext;
-}
-
-#pragma mark - In memory managed object context
-
-- (NSManagedObjectContext *)inMemoryContext
-{
-    NSPersistentStoreCoordinator *inMemoryPersistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    
-    [inMemoryPersistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:NULL];
-    
-    NSManagedObjectContext *inMemoryContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
-    inMemoryContext.persistentStoreCoordinator = inMemoryPersistentStoreCoordinator;
-    
-    return inMemoryContext;
-}
-
-#pragma mark - Helpers
-
-- (NSString *)bundleName
-{
-    return [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
-}
-
-- (NSURL *)applicationDocumentsDirectory
-{
-    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
 
 @end

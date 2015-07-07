@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "NBCoreDataController"
-  s.version      = "0.1.1"
+  s.version      = "1.0"
   s.summary      = "Simple and lightweight three-layer CoreData stack for asynchronous saving"
   s.description  = <<-DESC
   				   NBCoreDataController is a simple and lightweight implementatoin of the elegant
