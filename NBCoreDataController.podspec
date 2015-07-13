@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "NBCoreDataController"
-  s.version      = "1.0"
+  s.version      = "1.0.1"
   s.summary      = "Simple and lightweight three-layer CoreData stack for asynchronous saving"
   s.description  = <<-DESC
   				   NBCoreDataController is a simple and lightweight implementatoin of the elegant
@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/nunobaldaia/NBCoreDataController.git", :tag => s.version.to_s }
   s.source_files = "NBCoreDataController"
   s.frameworks   = "Foundation", "CoreData"
-  s.platform     = :ios, "7.0"
   s.requires_arc = true
+  s.ios.deployment_target = '7.0'
+  s.osx.deployment_target = '10.9'
 end
