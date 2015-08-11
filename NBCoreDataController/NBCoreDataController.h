@@ -56,19 +56,36 @@
 - (void)buildStackWithPersistentStoreCoordinator:(NSPersistentStoreCoordinator *)persistentStoreCoordinator;
 
 /**
- Save the @c mainContext up to the store, providing a block to perform heavy operations on a background thread
+ @deprecated Save the @c mainContext up to the store, providing a block to perform heavy operations on a background thread
  
  @param block The block that will be performed on a background thread with a temporary private queue concurrency type managed object context
  @param completion The completion block with the saving success result and error
  */
-- (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block completion:(void (^)(BOOL success, NSError *error))completion;
+- (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block completion:(void (^)(BOOL success, NSError *error))completion DEPRECATED_ATTRIBUTE;
 
 /**
- Save the @c mainContext up to the store
+ @deprecated Save the @c mainContext up to the store
  
  @param completion The completion block with the saving success result and error
  */
-- (void)saveWithCompletion:(void (^)(BOOL success, NSError *error))completion;
+- (void)saveWithCompletion:(void (^)(BOOL success, NSError *error))completion DEPRECATED_ATTRIBUTE;
+
+/**
+ @deprecated Save the @c mainContext up to the store, providing a block to perform heavy operations on a background thread
+ 
+ @param block The block that will be performed on a background thread with a temporary private queue concurrency type managed object context
+ @param success The success block
+ @param failure The failure block
+ */
+- (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block success:(void (^)())success failure:(void (^)(NSError *error))failure;
+
+/**
+ @deprecated Save the @c mainContext up to the store
+ 
+ @param success The success block
+ @param failure The failure block
+ */
+- (void)saveWithSuccess:(void (^)())success failure:(void (^)(NSError *error))failure;
 
 /**
  Return the managed object ID from the persistent store.

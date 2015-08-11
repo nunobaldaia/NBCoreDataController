@@ -62,8 +62,34 @@
 
 - (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block completion:(void (^)(BOOL success, NSError *error))completion
 {
+    [self saveWithBlock:block success:^{
+        if (completion) {
+            completion(YES, nil);
+        }
+    } failure:^(NSError *error) {
+        if (completion) {
+            completion(NO, error);
+        }
+    }];
+}
+
+- (void)saveWithCompletion:(void (^)(BOOL success, NSError *error))completion
+{
+    [self saveWithSuccess:^{
+        if (completion) {
+            completion(YES, nil);
+        }
+    } failure:^(NSError *error) {
+        if (completion) {
+            completion(NO, error);
+        }
+    }];
+}
+
+- (void)saveWithBlock:(void (^)(NSManagedObjectContext *localContext))block success:(void (^)())success failure:(void (^)(NSError *))failure
+{
     if (block == nil) {
-        [self saveWithCompletion:completion];
+        [self saveWithSuccess:success failure:failure];
         return;
     }
     
@@ -84,19 +110,19 @@
         if ([temporaryContext save:&error]) {
             
             // Save the main context up the the store
-            [weakSelf saveWithCompletion:completion];
+            [weakSelf saveWithSuccess:success failure:failure];
         }
         else {
-            if (completion) {
+            if (failure) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(NO, error);
+                    failure(error);
                 });
             }
         }
     }];
 }
 
-- (void)saveWithCompletion:(void (^)(BOOL success, NSError *error))completion
+- (void)saveWithSuccess:(void (^)())success failure:(void (^)(NSError *))failure
 {
     NSManagedObjectContext *rootContext = self.rootContext;
     NSManagedObjectContext *mainContext = self.mainContext;
@@ -113,24 +139,24 @@
                 
                 NSError *error;
                 if ([rootContext save:&error]) {
-                    if (completion) {
+                    if (success) {
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            completion(YES, nil);
+                            success();
                         });
                     }
                 }
                 else {
-                    if (completion) {
+                    if (failure) {
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            completion(NO, error);
+                            failure(error);
                         });
                     }
                 }
             }];
         }
         else {
-            if (completion) {
-                completion(NO, error);
+            if (failure) {
+                failure(error);
             }
         }
     }];
